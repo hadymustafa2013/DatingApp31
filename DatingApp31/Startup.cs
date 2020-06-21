@@ -14,7 +14,6 @@ namespace DatingApp31
 {
     public class Startup
     {
-        // Hiiiii
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
