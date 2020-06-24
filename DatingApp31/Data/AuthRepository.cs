@@ -63,6 +63,7 @@ namespace DatingApp31.Data
 
         public async Task<bool> UserExists(string username)
         {
+            System.Threading.Thread.Sleep(5000);
             if (await _context.Users.AnyAsync(v => v.UserName == username))
                 return true;
 
