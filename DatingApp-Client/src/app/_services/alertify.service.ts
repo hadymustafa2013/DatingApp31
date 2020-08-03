@@ -5,13 +5,13 @@ import * as alertify from 'alertifyjs';
   providedIn: 'root'
 })
 export class AlertifyService {
-
+  
   constructor() { }
 
-  confirm(message: string, okCallBack: () => any) {
-    alertify(message, (e: any) => {
+  confirm(message: string, okCallBack: (e) => any) {
+    alertify.confirm(message, (e: any) => {
       if (e) {
-        okCallBack();
+        okCallBack(e);
       } else {}
     });
   }

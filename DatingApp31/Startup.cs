@@ -25,6 +25,7 @@ namespace DatingApp31
 {
     public class Startup
     {
+        // dw9om7cd1 Assigned cloud name
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -41,6 +42,7 @@ namespace DatingApp31
                 options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
             });
             services.AddCors();
+            services.Configure<CloudinarySettings>(Configuration.GetSection("CloudinarySettings"));
             services.AddAutoMapper(typeof(DatingRepository).Assembly);
             services.AddTransient<Seed>();
             services.AddScoped<IAuthRepository, AuthRepository>();
