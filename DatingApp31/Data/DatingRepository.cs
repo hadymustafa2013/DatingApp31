@@ -108,5 +108,47 @@ namespace DatingApp31.Data
         {
             return await _context.Likes.FirstOrDefaultAsync(v => v.LikerId == userId && v.LikeeId == recipientId);
         }
+
+        public async Task<Message> GetMessage(int id)
+        {
+            return await _context.Messages.FirstOrDefaultAsync(v => v.Id == id); 
+        }
+
+        public async Task<PagedList<Message>> GetMessagesForUser(MessageParams messageParams)
+        {
+            var messages = _context.Messages
+                .Include(v => v.Sender).ThenInclude(p => p.Photos)
+                .Include(v => v.Recepient).ThenInclude(p => p.Photos)
+                .AsQueryable();
+
+            switch(messageParams.MessageContainer)
+            {
+                case "Inbox":
+                    messages = messages.Where(v => v.RecepientId == messageParams.UserId && v.RecepientDeleted == false);
+                    break;
+                case "Outbox":
+                    messages = messages.Where(v => v.SenderId == messageParams.UserId && v.SenderDeleted == false);
+                    break;
+                default:
+                    messages = messages.Where(v => v.RecepientId == messageParams.UserId && v.IsRead == false && v.RecepientDeleted == false);
+                    break;
+            }
+
+            messages = messages.OrderByDescending(v => v.MessageSent);
+            return await PagedList<Message>.CreateAsync(messages, messageParams.PageNumber, messageParams.PageSize);
+        }
+
+        public async Task<IEnumerable<Message>> GetMessageThread(int userId, int recipientId)
+        {
+            var messages = await _context.Messages
+                .Include(v => v.Sender).ThenInclude(p => p.Photos)
+                .Include(v => v.Recepient).ThenInclude(p => p.Photos)
+                .Where(v => v.RecepientId == userId && v.RecepientDeleted == false && v.SenderId == recipientId
+                || v.SenderId == userId && v.SenderDeleted == false && v.RecepientId == recipientId)
+                .OrderByDescending(v => v.MessageSent)
+                .ToListAsync();
+
+            return messages;
+        }
     }
 }
