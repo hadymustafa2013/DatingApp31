@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Http;
 using DatingApp31.Helpers;
 using Newtonsoft.Json;
 using AutoMapper;
+using DatingApp31.Hubs;
 
 namespace DatingApp31
 {
@@ -61,7 +62,18 @@ namespace DatingApp31
             {
                 options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
             });
-            services.AddCors();
+            services.AddSignalR();
+            //services.AddCors();
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: "MyAllowSpecificOrigins",
+                                  builder =>
+                                  {
+                                      builder.AllowAnyMethod().AllowAnyHeader()
+                                      .WithOrigins("http://localhost:4200")
+                                      .AllowCredentials();
+                                  });
+            });
             services.Configure<CloudinarySettings>(Configuration.GetSection("CloudinarySettings"));
             services.AddAutoMapper(typeof(DatingRepository).Assembly);
             services.AddTransient<Seed>();
@@ -109,7 +121,8 @@ namespace DatingApp31
             }
 
             app.UseRouting();
-            app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+            //app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+            app.UseCors("MyAllowSpecificOrigins");
 
             app.UseDefaultFiles();
             app.UseStaticFiles();
@@ -120,7 +133,8 @@ namespace DatingApp31
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapFallbackToController("Index", "FallBack");  
+                endpoints.MapFallbackToController("Index", "FallBack");
+                endpoints.MapHub<ChatHub>("/chatsocket");
             });
         }
     }

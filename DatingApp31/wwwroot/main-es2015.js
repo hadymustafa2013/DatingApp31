@@ -99,6 +99,26 @@ PreventUnsavedChanges.ɵprov = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵd
 
 /***/ }),
 
+/***/ "./src/app/_models/ChatMessage.ts":
+/*!****************************************!*\
+  !*** ./src/app/_models/ChatMessage.ts ***!
+  \****************************************/
+/*! exports provided: ChatMessage */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ChatMessage", function() { return ChatMessage; });
+class ChatMessage {
+    constructor() {
+        this.user = '';
+        this.msgText = '';
+    }
+}
+
+
+/***/ }),
+
 /***/ "./src/app/_models/Pagination.ts":
 /*!***************************************!*\
   !*** ./src/app/_models/Pagination.ts ***!
@@ -481,6 +501,84 @@ AuthService.ɵprov = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineInjec
 
 /***/ }),
 
+/***/ "./src/app/_services/chat.service.ts":
+/*!*******************************************!*\
+  !*** ./src/app/_services/chat.service.ts ***!
+  \*******************************************/
+/*! exports provided: ChatService */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ChatService", function() { return ChatService; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "./node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm2015/core.js");
+/* harmony import */ var _microsoft_signalr__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @microsoft/signalr */ "./node_modules/@microsoft/signalr/dist/esm/index.js");
+/* harmony import */ var _models_ChatMessage__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../_models/ChatMessage */ "./src/app/_models/ChatMessage.ts");
+/* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! rxjs */ "./node_modules/rxjs/_esm2015/index.js");
+/* harmony import */ var _angular_common_http__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @angular/common/http */ "./node_modules/@angular/common/__ivy_ngcc__/fesm2015/http.js");
+
+
+ // import signalR
+
+
+
+
+class ChatService {
+    constructor(http) {
+        this.http = http;
+        this.connection = new _microsoft_signalr__WEBPACK_IMPORTED_MODULE_2__["HubConnectionBuilder"]().withUrl("https://localhost:44379/chatsocket") // mapping to the chathub as in startup.cs
+            .configureLogging(_microsoft_signalr__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Information)
+            .build();
+        this.POST_URL = "https://localhost:44379/api/chat/send";
+        this.receivedMessageObject = new _models_ChatMessage__WEBPACK_IMPORTED_MODULE_3__["ChatMessage"]();
+        this.sharedObj = new rxjs__WEBPACK_IMPORTED_MODULE_4__["Subject"]();
+        this.connection.onclose(() => Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function* () {
+            yield this.start();
+        }));
+        this.connection.on("ReceiveOne", (user, message) => { this.mapReceivedMessage(user, message); });
+        this.start();
+    }
+    // Strart the connection
+    start() {
+        return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function* () {
+            try {
+                yield this.connection.start();
+                console.log("connected");
+            }
+            catch (err) {
+                console.log(err);
+                setTimeout(() => this.start(), 5000);
+            }
+        });
+    }
+    mapReceivedMessage(user, message) {
+        this.receivedMessageObject.user = user;
+        this.receivedMessageObject.msgText = message;
+        this.sharedObj.next(this.receivedMessageObject);
+    }
+    /* ****************************** Public Mehods **************************************** */
+    // Calls the controller method
+    broadcastMessage(msgDto) {
+        this.http.post(this.POST_URL, msgDto).subscribe(data => console.log(data));
+        // this.connection.invoke("SendMessage1", msgDto.user, msgDto.msgText).catch(err => console.error(err));    // This can invoke the server method named as "SendMethod1" directly.
+    }
+    retrieveMappedObject() {
+        return this.sharedObj.asObservable();
+    }
+}
+ChatService.ɵfac = function ChatService_Factory(t) { return new (t || ChatService)(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](_angular_common_http__WEBPACK_IMPORTED_MODULE_5__["HttpClient"])); };
+ChatService.ɵprov = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineInjectable"]({ token: ChatService, factory: ChatService.ɵfac, providedIn: 'root' });
+/*@__PURE__*/ (function () { _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵsetClassMetadata"](ChatService, [{
+        type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Injectable"],
+        args: [{
+                providedIn: 'root'
+            }]
+    }], function () { return [{ type: _angular_common_http__WEBPACK_IMPORTED_MODULE_5__["HttpClient"] }]; }, null); })();
+
+
+/***/ }),
+
 /***/ "./src/app/_services/error.interceptor.ts":
 /*!************************************************!*\
   !*** ./src/app/_services/error.interceptor.ts ***!
@@ -754,6 +852,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _resolvers_lists_resolver__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! ./_resolvers/lists.resolver */ "./src/app/_resolvers/lists.resolver.ts");
 /* harmony import */ var _resolvers_messages_resolver__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! ./_resolvers/messages.resolver */ "./src/app/_resolvers/messages.resolver.ts");
 /* harmony import */ var _members_member_messages_member_messages_component__WEBPACK_IMPORTED_MODULE_35__ = __webpack_require__(/*! ./members/member-messages/member-messages.component */ "./src/app/members/member-messages/member-messages.component.ts");
+/* harmony import */ var _chat_chat_component__WEBPACK_IMPORTED_MODULE_36__ = __webpack_require__(/*! ./chat/chat.component */ "./src/app/chat/chat.component.ts");
+
 
 
 
@@ -848,7 +948,8 @@ AppModule.ɵinj = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineInjector
         _members_member_detail_member_detail_component__WEBPACK_IMPORTED_MODULE_26__["MemberDetailComponent"],
         _members_member_edit_member_edit_component__WEBPACK_IMPORTED_MODULE_29__["MemberEditComponent"],
         _members_photo_editor_photo_editor_component__WEBPACK_IMPORTED_MODULE_32__["PhotoEditorComponent"],
-        _members_member_messages_member_messages_component__WEBPACK_IMPORTED_MODULE_35__["MemberMessagesComponent"]], imports: [_angular_platform_browser__WEBPACK_IMPORTED_MODULE_0__["BrowserModule"],
+        _members_member_messages_member_messages_component__WEBPACK_IMPORTED_MODULE_35__["MemberMessagesComponent"],
+        _chat_chat_component__WEBPACK_IMPORTED_MODULE_36__["ChatComponent"]], imports: [_angular_platform_browser__WEBPACK_IMPORTED_MODULE_0__["BrowserModule"],
         _angular_common_http__WEBPACK_IMPORTED_MODULE_2__["HttpClientModule"],
         _angular_forms__WEBPACK_IMPORTED_MODULE_3__["FormsModule"],
         _angular_forms__WEBPACK_IMPORTED_MODULE_3__["ReactiveFormsModule"],
@@ -869,7 +970,8 @@ AppModule.ɵinj = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineInjector
                     _members_member_detail_member_detail_component__WEBPACK_IMPORTED_MODULE_26__["MemberDetailComponent"],
                     _members_member_edit_member_edit_component__WEBPACK_IMPORTED_MODULE_29__["MemberEditComponent"],
                     _members_photo_editor_photo_editor_component__WEBPACK_IMPORTED_MODULE_32__["PhotoEditorComponent"],
-                    _members_member_messages_member_messages_component__WEBPACK_IMPORTED_MODULE_35__["MemberMessagesComponent"]
+                    _members_member_messages_member_messages_component__WEBPACK_IMPORTED_MODULE_35__["MemberMessagesComponent"],
+                    _chat_chat_component__WEBPACK_IMPORTED_MODULE_36__["ChatComponent"]
                 ],
                 imports: [
                     _angular_platform_browser__WEBPACK_IMPORTED_MODULE_0__["BrowserModule"],
@@ -907,6 +1009,117 @@ AppModule.ɵinj = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineInjector
                 bootstrap: [_app_component__WEBPACK_IMPORTED_MODULE_15__["AppComponent"]]
             }]
     }], null, null); })();
+
+
+/***/ }),
+
+/***/ "./src/app/chat/chat.component.ts":
+/*!****************************************!*\
+  !*** ./src/app/chat/chat.component.ts ***!
+  \****************************************/
+/*! exports provided: ChatComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ChatComponent", function() { return ChatComponent; });
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm2015/core.js");
+/* harmony import */ var _models_ChatMessage__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../_models/ChatMessage */ "./src/app/_models/ChatMessage.ts");
+/* harmony import */ var _services_chat_service__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../_services/chat.service */ "./src/app/_services/chat.service.ts");
+/* harmony import */ var _angular_common__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @angular/common */ "./node_modules/@angular/common/__ivy_ngcc__/fesm2015/common.js");
+/* harmony import */ var _angular_forms__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @angular/forms */ "./node_modules/@angular/forms/__ivy_ngcc__/fesm2015/forms.js");
+
+
+
+
+
+
+function ChatComponent_li_6_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](0, "li", 10);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](2, "br");
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](3, "span", 11);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](4);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+} if (rf & 2) {
+    const mObj_r1 = ctx.$implicit;
+    const ctx_r0 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵnextContext"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("ngClass", mObj_r1.user === ctx_r0.msgDto.user ? "in-msg" : "ex-msg");
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtextInterpolate1"]("", mObj_r1.user, " :");
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](3);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtextInterpolate"](mObj_r1.msgText);
+} }
+class ChatComponent {
+    constructor(chatService) {
+        this.chatService = chatService;
+        this.msgDto = new _models_ChatMessage__WEBPACK_IMPORTED_MODULE_1__["ChatMessage"]();
+        this.msgInboxArray = [];
+    }
+    ngOnInit() {
+        this.chatService.retrieveMappedObject().subscribe((receivedObj) => { this.addToInbox(receivedObj); }); // calls the service method to get the new messages sent
+    }
+    send() {
+        if (this.msgDto) {
+            if (this.msgDto.user.length == 0 || this.msgDto.user.length == 0) {
+                window.alert("Both fields are required.");
+                return;
+            }
+            else {
+                this.chatService.broadcastMessage(this.msgDto); // Send the message via a service
+            }
+        }
+    }
+    addToInbox(obj) {
+        let newObj = new _models_ChatMessage__WEBPACK_IMPORTED_MODULE_1__["ChatMessage"]();
+        newObj.user = obj.user;
+        newObj.msgText = obj.msgText;
+        this.msgInboxArray.push(newObj);
+    }
+}
+ChatComponent.ɵfac = function ChatComponent_Factory(t) { return new (t || ChatComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdirectiveInject"](_services_chat_service__WEBPACK_IMPORTED_MODULE_2__["ChatService"])); };
+ChatComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComponent"]({ type: ChatComponent, selectors: [["app-chat"]], decls: 12, vars: 3, consts: [[1, "ud-header"], [1, "text-center"], [1, "ud-body"], [1, "msg-box"], [3, "ngClass", 4, "ngFor", "ngForOf"], [1, "ud-flex-row"], ["type", "text", "placeholder", "Type message here", 1, "msg-input", 3, "ngModel", "ngModelChange"], [1, "send-btn", 3, "click"], [1, "fa", "fa-paper-plane"], ["type", "text", "placeholder", "Your name", 1, "name-box", 3, "ngModel", "ngModelChange"], [3, "ngClass"], [1, "msg-italic-style"]], template: function ChatComponent_Template(rf, ctx) { if (rf & 1) {
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](0, "div", 0);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](1, "h2", 1);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](2, "Public Chat");
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](3, "div", 2);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](4, "div", 3);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](5, "ul");
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtemplate"](6, ChatComponent_li_6_Template, 5, 3, "li", 4);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](7, "div", 5);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](8, "input", 6);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵlistener"]("ngModelChange", function ChatComponent_Template_input_ngModelChange_8_listener($event) { return ctx.msgDto.msgText = $event; });
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](9, "button", 7);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵlistener"]("click", function ChatComponent_Template_button_click_9_listener() { return ctx.send(); });
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](10, "i", 8);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](11, "input", 9);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵlistener"]("ngModelChange", function ChatComponent_Template_input_ngModelChange_11_listener($event) { return ctx.msgDto.user = $event; });
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+    } if (rf & 2) {
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](6);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("ngForOf", ctx.msgInboxArray);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](2);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("ngModel", ctx.msgDto.msgText);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](3);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("ngModel", ctx.msgDto.user);
+    } }, directives: [_angular_common__WEBPACK_IMPORTED_MODULE_3__["NgForOf"], _angular_forms__WEBPACK_IMPORTED_MODULE_4__["DefaultValueAccessor"], _angular_forms__WEBPACK_IMPORTED_MODULE_4__["NgControlStatus"], _angular_forms__WEBPACK_IMPORTED_MODULE_4__["NgModel"], _angular_common__WEBPACK_IMPORTED_MODULE_3__["NgClass"]], styles: ["*[_ngcontent-%COMP%] {\r\n  box-sizing: border-box;\r\n  margin: 0;\r\n  padding: 0;\r\n}\r\n\r\n\r\n.text-center[_ngcontent-%COMP%] {\r\n  text-align: center;\r\n}\r\n\r\n\r\nh2[_ngcontent-%COMP%] {\r\n  margin: 0;\r\n}\r\n\r\n\r\n.msg-italic-style[_ngcontent-%COMP%] {\r\n  font-style: italic;\r\n  font-family: Georgia, 'Times New Roman', Times, serif;\r\n  font-size: 18px;\r\n}\r\n\r\n\r\n.ud-header[_ngcontent-%COMP%] {\r\n  position: fixed;\r\n  left: 0;\r\n  top: 0;\r\n  right: 0;\r\n  width: 100%;\r\n  background-color: rgb(25, 29, 50);\r\n  height: 8vh;\r\n  display: flex;\r\n  flex-direction: row;\r\n  justify-content: center;\r\n  align-items: center;\r\n}\r\n\r\n\r\nh2[_ngcontent-%COMP%]\r\n{\r\n  color: #FDFFFF;\r\n}\r\n\r\n\r\n.ud-body[_ngcontent-%COMP%] {\r\n  position:absolute;\r\n  top: 0;\r\n  bottom: 0;\r\n  left: 0;\r\n  right: 0;\r\n  margin: 9vh 10% 2vh;\r\n  padding: 0 10% 0;\r\n}\r\n\r\n\r\n.msg-box[_ngcontent-%COMP%] {\r\n  width: 100%;\r\n  height: calc(100% - 140px);\r\n  margin-top: 20px;\r\n  border: 2px solid #191D32;\r\n  border-radius: .5em;\r\n  padding: 10px 30px;\r\n  font-size: 14px;\r\n  overflow: auto;\r\n}\r\n\r\n\r\nul[_ngcontent-%COMP%] {\r\n  list-style: none;\r\n}\r\n\r\n\r\n.ex-msg[_ngcontent-%COMP%] {\r\n  margin-bottom: 10px;\r\n  color: #459c1a;\r\n  text-align: left;\r\n}\r\n\r\n\r\n.in-msg[_ngcontent-%COMP%] {\r\n  margin-bottom: 10px;\r\n  color: #DD1155;\r\n  text-align: right;\r\n}\r\n\r\n\r\n.ud-flex-row[_ngcontent-%COMP%] {\r\n  margin-top: 20px;\r\n  height: 40px;\r\n  width: 100%;\r\n  display: flex;\r\n  flex-direction: row;\r\n  align-items: center;\r\n  justify-content: space-between;\r\n}\r\n\r\n\r\n.msg-input[_ngcontent-%COMP%] {\r\n  height: 100%;\r\n  border-radius: .5em;\r\n  border: 0px solid rgba(0, 0, 0, 0);\r\n  padding: 10px;\r\n  flex: 1 1 0;\r\n  border: 1.5px solid #DD1155;\r\n}\r\n\r\n\r\n.msg-input[_ngcontent-%COMP%]:focus {\r\n  outline: none;\r\n  border-color: #DD1155;\r\n  box-shadow: 0 0 5px #DD1155;\r\n}\r\n\r\n\r\n.send-btn[_ngcontent-%COMP%] {\r\n  height: 100%;\r\n  width: 100px;\r\n  border-radius: .3em;\r\n  background-color: #DD1155;\r\n  margin-left: 20px;\r\n  border: 0px solid rgba(0, 0, 0, 0);\r\n  font-size: 25px;\r\n  color: #FDFFFF;\r\n  position: relative;\r\n}\r\n\r\n\r\n.send-btn[_ngcontent-%COMP%]:focus {\r\n    outline: none;\r\n    border-color: #DD1155;\r\n    box-shadow: 0 0 5px #DD1155;\r\n  }\r\n\r\n\r\n\r\n\r\n\r\n.ud-flex-row[_ngcontent-%COMP%] {\r\n    flex-direction: column;\r\n    align-items: flex-start;\r\n    height: 80px;\r\n  }\r\n\r\n\r\n.msg-input[_ngcontent-%COMP%] {\r\n    width: 100%;\r\n  }\r\n\r\n\r\n.send-btn[_ngcontent-%COMP%] {\r\n  margin-left: 0px;\r\n  font-size: 20px;\r\n  margin-top: 7px;\r\n  height: 80%;\r\n}\r\n\r\n\r\n.name-box[_ngcontent-%COMP%] {\r\n  margin-top: 10px;\r\n  height: 40px;\r\n  width: 180px;\r\n  border-radius: .5em;\r\n  border: 0px solid rgba(0, 0, 0, 0);\r\n  padding: 10px;\r\n  font-size: 15px;\r\n  border: 1px solid #b423d1;\r\n}\r\n\r\n\r\n.name-box[_ngcontent-%COMP%]:focus {\r\n    outline: none;\r\n  }\r\n\r\n\r\n@media screen and (max-width: 500px) {\r\n  .ud-body[_ngcontent-%COMP%] {\r\n    margin: 9vh 5% 2vh;\r\n    padding: 0 5% 0;\r\n  }\r\n  .msg-box[_ngcontent-%COMP%] {\r\n    height: calc(100% - 180px);\r\n    padding: 10px 10px;\r\n  }\r\n\r\n}\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImNoYXQvY2hhdC5jb21wb25lbnQuY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7QUFDQTtFQUNFLHNCQUFzQjtFQUN0QixTQUFTO0VBQ1QsVUFBVTtBQUNaOzs7QUFHQTtFQUNFLGtCQUFrQjtBQUNwQjs7O0FBRUE7RUFDRSxTQUFTO0FBQ1g7OztBQUVBO0VBQ0Usa0JBQWtCO0VBQ2xCLHFEQUFxRDtFQUNyRCxlQUFlO0FBQ2pCOzs7QUFHQTtFQUNFLGVBQWU7RUFDZixPQUFPO0VBQ1AsTUFBTTtFQUNOLFFBQVE7RUFDUixXQUFXO0VBQ1gsaUNBQWlDO0VBQ2pDLFdBQVc7RUFDWCxhQUFhO0VBQ2IsbUJBQW1CO0VBQ25CLHVCQUF1QjtFQUN2QixtQkFBbUI7QUFDckI7OztBQUVBOztFQUVFLGNBQWM7QUFDaEI7OztBQUVBO0VBQ0UsaUJBQWlCO0VBQ2pCLE1BQU07RUFDTixTQUFTO0VBQ1QsT0FBTztFQUNQLFFBQVE7RUFDUixtQkFBbUI7RUFDbkIsZ0JBQWdCO0FBQ2xCOzs7QUFFQTtFQUNFLFdBQVc7RUFDWCwwQkFBMEI7RUFDMUIsZ0JBQWdCO0VBQ2hCLHlCQUF5QjtFQUN6QixtQkFBbUI7RUFDbkIsa0JBQWtCO0VBQ2xCLGVBQWU7RUFDZixjQUFjO0FBQ2hCOzs7QUFFQTtFQUNFLGdCQUFnQjtBQUNsQjs7O0FBRUE7RUFDRSxtQkFBbUI7RUFDbkIsY0FBYztFQUNkLGdCQUFnQjtBQUNsQjs7O0FBRUE7RUFDRSxtQkFBbUI7RUFDbkIsY0FBYztFQUNkLGlCQUFpQjtBQUNuQjs7O0FBRUE7RUFDRSxnQkFBZ0I7RUFDaEIsWUFBWTtFQUNaLFdBQVc7RUFDWCxhQUFhO0VBQ2IsbUJBQW1CO0VBQ25CLG1CQUFtQjtFQUNuQiw4QkFBOEI7QUFDaEM7OztBQUVBO0VBQ0UsWUFBWTtFQUNaLG1CQUFtQjtFQUNuQixrQ0FBa0M7RUFDbEMsYUFBYTtFQUNiLFdBQVc7RUFDWCwyQkFBMkI7QUFDN0I7OztBQUVBO0VBQ0UsYUFBYTtFQUNiLHFCQUFxQjtFQUNyQiwyQkFBMkI7QUFDN0I7OztBQUVBO0VBQ0UsWUFBWTtFQUNaLFlBQVk7RUFDWixtQkFBbUI7RUFDbkIseUJBQXlCO0VBQ3pCLGlCQUFpQjtFQUNqQixrQ0FBa0M7RUFDbEMsZUFBZTtFQUNmLGNBQWM7RUFDZCxrQkFBa0I7QUFDcEI7OztBQUVFO0lBQ0UsYUFBYTtJQUNiLHFCQUFxQjtJQUNyQiwyQkFBMkI7RUFDN0I7OztBQUlGLHlDQUF5Qzs7O0FBQ3ZDO0lBQ0Usc0JBQXNCO0lBQ3RCLHVCQUF1QjtJQUN2QixZQUFZO0VBQ2Q7OztBQUVBO0lBQ0UsV0FBVztFQUNiOzs7QUFFRjtFQUNFLGdCQUFnQjtFQUNoQixlQUFlO0VBQ2YsZUFBZTtFQUNmLFdBQVc7QUFDYjs7O0FBRUE7RUFDRSxnQkFBZ0I7RUFDaEIsWUFBWTtFQUNaLFlBQVk7RUFDWixtQkFBbUI7RUFDbkIsa0NBQWtDO0VBQ2xDLGFBQWE7RUFDYixlQUFlO0VBQ2YseUJBQXlCO0FBQzNCOzs7QUFFRTtJQUNFLGFBQWE7RUFDZjs7O0FBRUY7RUFDRTtJQUNFLGtCQUFrQjtJQUNsQixlQUFlO0VBQ2pCO0VBQ0E7SUFDRSwwQkFBMEI7SUFDMUIsa0JBQWtCO0VBQ3BCOztBQUVGIiwiZmlsZSI6ImNoYXQvY2hhdC5jb21wb25lbnQuY3NzIiwic291cmNlc0NvbnRlbnQiOlsiXHJcbioge1xyXG4gIGJveC1zaXppbmc6IGJvcmRlci1ib3g7XHJcbiAgbWFyZ2luOiAwO1xyXG4gIHBhZGRpbmc6IDA7XHJcbn1cclxuXHJcblxyXG4udGV4dC1jZW50ZXIge1xyXG4gIHRleHQtYWxpZ246IGNlbnRlcjtcclxufVxyXG5cclxuaDIge1xyXG4gIG1hcmdpbjogMDtcclxufVxyXG5cclxuLm1zZy1pdGFsaWMtc3R5bGUge1xyXG4gIGZvbnQtc3R5bGU6IGl0YWxpYztcclxuICBmb250LWZhbWlseTogR2VvcmdpYSwgJ1RpbWVzIE5ldyBSb21hbicsIFRpbWVzLCBzZXJpZjtcclxuICBmb250LXNpemU6IDE4cHg7XHJcbn1cclxuXHJcblxyXG4udWQtaGVhZGVyIHtcclxuICBwb3NpdGlvbjogZml4ZWQ7XHJcbiAgbGVmdDogMDtcclxuICB0b3A6IDA7XHJcbiAgcmlnaHQ6IDA7XHJcbiAgd2lkdGg6IDEwMCU7XHJcbiAgYmFja2dyb3VuZC1jb2xvcjogcmdiKDI1LCAyOSwgNTApO1xyXG4gIGhlaWdodDogOHZoO1xyXG4gIGRpc3BsYXk6IGZsZXg7XHJcbiAgZmxleC1kaXJlY3Rpb246IHJvdztcclxuICBqdXN0aWZ5LWNvbnRlbnQ6IGNlbnRlcjtcclxuICBhbGlnbi1pdGVtczogY2VudGVyO1xyXG59XHJcblxyXG5oMlxyXG57XHJcbiAgY29sb3I6ICNGREZGRkY7XHJcbn1cclxuXHJcbi51ZC1ib2R5IHtcclxuICBwb3NpdGlvbjphYnNvbHV0ZTtcclxuICB0b3A6IDA7XHJcbiAgYm90dG9tOiAwO1xyXG4gIGxlZnQ6IDA7XHJcbiAgcmlnaHQ6IDA7XHJcbiAgbWFyZ2luOiA5dmggMTAlIDJ2aDtcclxuICBwYWRkaW5nOiAwIDEwJSAwO1xyXG59XHJcblxyXG4ubXNnLWJveCB7XHJcbiAgd2lkdGg6IDEwMCU7XHJcbiAgaGVpZ2h0OiBjYWxjKDEwMCUgLSAxNDBweCk7XHJcbiAgbWFyZ2luLXRvcDogMjBweDtcclxuICBib3JkZXI6IDJweCBzb2xpZCAjMTkxRDMyO1xyXG4gIGJvcmRlci1yYWRpdXM6IC41ZW07XHJcbiAgcGFkZGluZzogMTBweCAzMHB4O1xyXG4gIGZvbnQtc2l6ZTogMTRweDtcclxuICBvdmVyZmxvdzogYXV0bztcclxufVxyXG5cclxudWwge1xyXG4gIGxpc3Qtc3R5bGU6IG5vbmU7XHJcbn1cclxuXHJcbi5leC1tc2cge1xyXG4gIG1hcmdpbi1ib3R0b206IDEwcHg7XHJcbiAgY29sb3I6ICM0NTljMWE7XHJcbiAgdGV4dC1hbGlnbjogbGVmdDtcclxufVxyXG5cclxuLmluLW1zZyB7XHJcbiAgbWFyZ2luLWJvdHRvbTogMTBweDtcclxuICBjb2xvcjogI0REMTE1NTtcclxuICB0ZXh0LWFsaWduOiByaWdodDtcclxufVxyXG5cclxuLnVkLWZsZXgtcm93IHtcclxuICBtYXJnaW4tdG9wOiAyMHB4O1xyXG4gIGhlaWdodDogNDBweDtcclxuICB3aWR0aDogMTAwJTtcclxuICBkaXNwbGF5OiBmbGV4O1xyXG4gIGZsZXgtZGlyZWN0aW9uOiByb3c7XHJcbiAgYWxpZ24taXRlbXM6IGNlbnRlcjtcclxuICBqdXN0aWZ5LWNvbnRlbnQ6IHNwYWNlLWJldHdlZW47XHJcbn1cclxuXHJcbi5tc2ctaW5wdXQge1xyXG4gIGhlaWdodDogMTAwJTtcclxuICBib3JkZXItcmFkaXVzOiAuNWVtO1xyXG4gIGJvcmRlcjogMHB4IHNvbGlkIHJnYmEoMCwgMCwgMCwgMCk7XHJcbiAgcGFkZGluZzogMTBweDtcclxuICBmbGV4OiAxIDEgMDtcclxuICBib3JkZXI6IDEuNXB4IHNvbGlkICNERDExNTU7XHJcbn1cclxuXHJcbi5tc2ctaW5wdXQ6Zm9jdXMge1xyXG4gIG91dGxpbmU6IG5vbmU7XHJcbiAgYm9yZGVyLWNvbG9yOiAjREQxMTU1O1xyXG4gIGJveC1zaGFkb3c6IDAgMCA1cHggI0REMTE1NTtcclxufVxyXG5cclxuLnNlbmQtYnRuIHtcclxuICBoZWlnaHQ6IDEwMCU7XHJcbiAgd2lkdGg6IDEwMHB4O1xyXG4gIGJvcmRlci1yYWRpdXM6IC4zZW07XHJcbiAgYmFja2dyb3VuZC1jb2xvcjogI0REMTE1NTtcclxuICBtYXJnaW4tbGVmdDogMjBweDtcclxuICBib3JkZXI6IDBweCBzb2xpZCByZ2JhKDAsIDAsIDAsIDApO1xyXG4gIGZvbnQtc2l6ZTogMjVweDtcclxuICBjb2xvcjogI0ZERkZGRjtcclxuICBwb3NpdGlvbjogcmVsYXRpdmU7XHJcbn1cclxuXHJcbiAgLnNlbmQtYnRuOmZvY3VzIHtcclxuICAgIG91dGxpbmU6IG5vbmU7XHJcbiAgICBib3JkZXItY29sb3I6ICNERDExNTU7XHJcbiAgICBib3gtc2hhZG93OiAwIDAgNXB4ICNERDExNTU7XHJcbiAgfVxyXG5cclxuXHJcblxyXG4vKkBtZWRpYSBzY3JlZW4gYW5kIChtYXgtd2lkdGg6IDUwMHB4KSB7Ki9cclxuICAudWQtZmxleC1yb3cge1xyXG4gICAgZmxleC1kaXJlY3Rpb246IGNvbHVtbjtcclxuICAgIGFsaWduLWl0ZW1zOiBmbGV4LXN0YXJ0O1xyXG4gICAgaGVpZ2h0OiA4MHB4O1xyXG4gIH1cclxuXHJcbiAgLm1zZy1pbnB1dCB7XHJcbiAgICB3aWR0aDogMTAwJTtcclxuICB9XHJcblxyXG4uc2VuZC1idG4ge1xyXG4gIG1hcmdpbi1sZWZ0OiAwcHg7XHJcbiAgZm9udC1zaXplOiAyMHB4O1xyXG4gIG1hcmdpbi10b3A6IDdweDtcclxuICBoZWlnaHQ6IDgwJTtcclxufVxyXG5cclxuLm5hbWUtYm94IHtcclxuICBtYXJnaW4tdG9wOiAxMHB4O1xyXG4gIGhlaWdodDogNDBweDtcclxuICB3aWR0aDogMTgwcHg7XHJcbiAgYm9yZGVyLXJhZGl1czogLjVlbTtcclxuICBib3JkZXI6IDBweCBzb2xpZCByZ2JhKDAsIDAsIDAsIDApO1xyXG4gIHBhZGRpbmc6IDEwcHg7XHJcbiAgZm9udC1zaXplOiAxNXB4O1xyXG4gIGJvcmRlcjogMXB4IHNvbGlkICNiNDIzZDE7XHJcbn1cclxuXHJcbiAgLm5hbWUtYm94OmZvY3VzIHtcclxuICAgIG91dGxpbmU6IG5vbmU7XHJcbiAgfVxyXG5cclxuQG1lZGlhIHNjcmVlbiBhbmQgKG1heC13aWR0aDogNTAwcHgpIHtcclxuICAudWQtYm9keSB7XHJcbiAgICBtYXJnaW46IDl2aCA1JSAydmg7XHJcbiAgICBwYWRkaW5nOiAwIDUlIDA7XHJcbiAgfVxyXG4gIC5tc2ctYm94IHtcclxuICAgIGhlaWdodDogY2FsYygxMDAlIC0gMTgwcHgpO1xyXG4gICAgcGFkZGluZzogMTBweCAxMHB4O1xyXG4gIH1cclxuXHJcbn1cclxuXHJcbiJdfQ== */"] });
+/*@__PURE__*/ (function () { _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵsetClassMetadata"](ChatComponent, [{
+        type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Component"],
+        args: [{
+                selector: 'app-chat',
+                templateUrl: './chat.component.html',
+                styleUrls: ['./chat.component.css']
+            }]
+    }], function () { return [{ type: _services_chat_service__WEBPACK_IMPORTED_MODULE_2__["ChatService"] }]; }, null); })();
 
 
 /***/ }),
@@ -1239,8 +1452,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _angular_router__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @angular/router */ "./node_modules/@angular/router/__ivy_ngcc__/fesm2015/router.js");
 /* harmony import */ var ngx_bootstrap_tabs__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ngx-bootstrap/tabs */ "./node_modules/ngx-bootstrap/__ivy_ngcc__/tabs/fesm2015/ngx-bootstrap-tabs.js");
 /* harmony import */ var _member_messages_member_messages_component__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../member-messages/member-messages.component */ "./src/app/members/member-messages/member-messages.component.ts");
-/* harmony import */ var ngx_timeago__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ngx-timeago */ "./node_modules/ngx-timeago/__ivy_ngcc__/fesm2015/ngx-timeago.js");
-/* harmony import */ var _angular_common__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @angular/common */ "./node_modules/@angular/common/__ivy_ngcc__/fesm2015/common.js");
+/* harmony import */ var _chat_chat_component__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../chat/chat.component */ "./src/app/chat/chat.component.ts");
+/* harmony import */ var ngx_timeago__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ngx-timeago */ "./node_modules/ngx-timeago/__ivy_ngcc__/fesm2015/ngx-timeago.js");
+/* harmony import */ var _angular_common__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @angular/common */ "./node_modules/@angular/common/__ivy_ngcc__/fesm2015/common.js");
+
 
 
 
@@ -1301,7 +1516,7 @@ MemberDetailComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵde
     } if (rf & 2) {
         var _t;
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵqueryRefresh"](_t = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵloadQuery"]()) && (ctx.memberTabs = _t.first);
-    } }, decls: 59, vars: 20, consts: [[1, "container", "mt-4"], [1, "row"], [1, "col-sm-4"], [1, "card"], [1, "card-img-top", "img-thumbnail", 3, "src", "alt"], [1, "card-body"], [1, "card-footer"], [1, "btn-group", "d-flex"], [1, "btn", "btn-primary", "w-100"], [1, "btn", "btn-success", "w-100", 3, "click"], [1, "col-sm-8"], [1, "tab-panel"], [1, "member-tabset"], ["memberTabs", ""], [3, "heading"], ["heading", "Interests"], ["heading", "Photos"], [3, "options", "images"], ["heading", "Messages"], [3, "recepientId"]], template: function MemberDetailComponent_Template(rf, ctx) { if (rf & 1) {
+    } }, decls: 61, vars: 20, consts: [[1, "container", "mt-4"], [1, "row"], [1, "col-sm-4"], [1, "card"], [1, "card-img-top", "img-thumbnail", 3, "src", "alt"], [1, "card-body"], [1, "card-footer"], [1, "btn-group", "d-flex"], [1, "btn", "btn-primary", "w-100"], [1, "btn", "btn-success", "w-100", 3, "click"], [1, "col-sm-8"], [1, "tab-panel"], [1, "member-tabset"], ["memberTabs", ""], [3, "heading"], ["heading", "Interests"], ["heading", "Photos"], [3, "options", "images"], ["heading", "Messages"], [3, "recepientId"], ["heading", "Chat"]], template: function MemberDetailComponent_Template(rf, ctx) { if (rf & 1) {
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](0, "div", 0);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](1, "div", 1);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](2, "div", 2);
@@ -1392,6 +1607,9 @@ MemberDetailComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵde
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](57, "tab", 18);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](58, "app-member-messages", 19);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](59, "tab", 20);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](60, "app-chat");
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
@@ -1423,7 +1641,7 @@ MemberDetailComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵde
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("options", ctx.galleryOptions)("images", ctx.galleryImages);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](2);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("recepientId", ctx.user.id);
-    } }, directives: [ngx_bootstrap_tabs__WEBPACK_IMPORTED_MODULE_5__["TabsetComponent"], ngx_bootstrap_tabs__WEBPACK_IMPORTED_MODULE_5__["TabDirective"], ngx_gallery_9__WEBPACK_IMPORTED_MODULE_1__["NgxGalleryComponent"], _member_messages_member_messages_component__WEBPACK_IMPORTED_MODULE_6__["MemberMessagesComponent"]], pipes: [ngx_timeago__WEBPACK_IMPORTED_MODULE_7__["TimeagoPipe"], _angular_common__WEBPACK_IMPORTED_MODULE_8__["DatePipe"]], styles: [".img-thumbnail[_ngcontent-%COMP%] {\r\n    margin: 25px;\r\n    width: 85%;\r\n    height: 85%;\r\n}\r\n\r\n.card-body[_ngcontent-%COMP%] {\r\n    padding: 0 25px;\r\n}\r\n\r\n.card-footer[_ngcontent-%COMP%] {\r\n    padding: 10px 15px;\r\n    background-color:#fff;\r\n    border-top: none;\r\n}\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1lbWJlcnMvbWVtYmVyLWRldGFpbC9tZW1iZXItZGV0YWlsLmNvbXBvbmVudC5jc3MiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IjtBQUNBO0lBQ0ksWUFBWTtJQUNaLFVBQVU7SUFDVixXQUFXO0FBQ2Y7O0FBRUE7SUFDSSxlQUFlO0FBQ25COztBQUVBO0lBQ0ksa0JBQWtCO0lBQ2xCLHFCQUFxQjtJQUNyQixnQkFBZ0I7QUFDcEIiLCJmaWxlIjoibWVtYmVycy9tZW1iZXItZGV0YWlsL21lbWJlci1kZXRhaWwuY29tcG9uZW50LmNzcyIsInNvdXJjZXNDb250ZW50IjpbIlxyXG4uaW1nLXRodW1ibmFpbCB7XHJcbiAgICBtYXJnaW46IDI1cHg7XHJcbiAgICB3aWR0aDogODUlO1xyXG4gICAgaGVpZ2h0OiA4NSU7XHJcbn1cclxuXHJcbi5jYXJkLWJvZHkge1xyXG4gICAgcGFkZGluZzogMCAyNXB4O1xyXG59XHJcblxyXG4uY2FyZC1mb290ZXIge1xyXG4gICAgcGFkZGluZzogMTBweCAxNXB4O1xyXG4gICAgYmFja2dyb3VuZC1jb2xvcjojZmZmO1xyXG4gICAgYm9yZGVyLXRvcDogbm9uZTtcclxufVxyXG4iXX0= */"] });
+    } }, directives: [ngx_bootstrap_tabs__WEBPACK_IMPORTED_MODULE_5__["TabsetComponent"], ngx_bootstrap_tabs__WEBPACK_IMPORTED_MODULE_5__["TabDirective"], ngx_gallery_9__WEBPACK_IMPORTED_MODULE_1__["NgxGalleryComponent"], _member_messages_member_messages_component__WEBPACK_IMPORTED_MODULE_6__["MemberMessagesComponent"], _chat_chat_component__WEBPACK_IMPORTED_MODULE_7__["ChatComponent"]], pipes: [ngx_timeago__WEBPACK_IMPORTED_MODULE_8__["TimeagoPipe"], _angular_common__WEBPACK_IMPORTED_MODULE_9__["DatePipe"]], styles: [".img-thumbnail[_ngcontent-%COMP%] {\r\n    margin: 25px;\r\n    width: 85%;\r\n    height: 85%;\r\n}\r\n\r\n.card-body[_ngcontent-%COMP%] {\r\n    padding: 0 25px;\r\n}\r\n\r\n.card-footer[_ngcontent-%COMP%] {\r\n    padding: 10px 15px;\r\n    background-color:#fff;\r\n    border-top: none;\r\n}\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1lbWJlcnMvbWVtYmVyLWRldGFpbC9tZW1iZXItZGV0YWlsLmNvbXBvbmVudC5jc3MiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IjtBQUNBO0lBQ0ksWUFBWTtJQUNaLFVBQVU7SUFDVixXQUFXO0FBQ2Y7O0FBRUE7SUFDSSxlQUFlO0FBQ25COztBQUVBO0lBQ0ksa0JBQWtCO0lBQ2xCLHFCQUFxQjtJQUNyQixnQkFBZ0I7QUFDcEIiLCJmaWxlIjoibWVtYmVycy9tZW1iZXItZGV0YWlsL21lbWJlci1kZXRhaWwuY29tcG9uZW50LmNzcyIsInNvdXJjZXNDb250ZW50IjpbIlxyXG4uaW1nLXRodW1ibmFpbCB7XHJcbiAgICBtYXJnaW46IDI1cHg7XHJcbiAgICB3aWR0aDogODUlO1xyXG4gICAgaGVpZ2h0OiA4NSU7XHJcbn1cclxuXHJcbi5jYXJkLWJvZHkge1xyXG4gICAgcGFkZGluZzogMCAyNXB4O1xyXG59XHJcblxyXG4uY2FyZC1mb290ZXIge1xyXG4gICAgcGFkZGluZzogMTBweCAxNXB4O1xyXG4gICAgYmFja2dyb3VuZC1jb2xvcjojZmZmO1xyXG4gICAgYm9yZGVyLXRvcDogbm9uZTtcclxufVxyXG4iXX0= */"] });
 /*@__PURE__*/ (function () { _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵsetClassMetadata"](MemberDetailComponent, [{
         type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Component"],
         args: [{

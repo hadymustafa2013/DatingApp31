@@ -36,6 +36,7 @@ import { PhotoEditorComponent } from './members/photo-editor/photo-editor.compon
 import { ListsResolver } from './_resolvers/lists.resolver';
 import { MessagesResolver } from './_resolvers/messages.resolver';
 import { MemberMessagesComponent } from './members/member-messages/member-messages.component';
+import { ChatComponent } from './chat/chat.component';
 
 
 export function tokenGetter() {
@@ -55,7 +56,8 @@ export function tokenGetter() {
     MemberDetailComponent,
     MemberEditComponent,
     PhotoEditorComponent,
-    MemberMessagesComponent
+    MemberMessagesComponent,
+    ChatComponent
   ],
   imports: [
     BrowserModule,
